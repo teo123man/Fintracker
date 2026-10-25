@@ -17,6 +17,11 @@ Banka ayrıştırıcıları belirli belge düzenleri için yazılmıştır. Fark
 
 ## Kurulum
 
+İki bağımsız kurulum yolu vardır:
+
+- **Arayüzle:** `Harcamalarim.bat` üzerinden klasör seçimi ve otomatik kurulum.
+- **Elle:** Aşağıdaki komutlarla kurulum ve doğrudan `app.py` üzerinden çalıştırma. Başlangıç penceresi tamamen isteğe bağlıdır.
+
 ### Windows: arayüzle başlatma
 
 1. Python 3.12 veya sonraki bir sürümü kurun. Python kurulumunda **Add python.exe to PATH** ve **tcl/tk** bileşenini etkinleştirin.
@@ -34,16 +39,55 @@ Dosyaları başka klasörlerden seçebilirsiniz. Yükleme ekranı dosyayı okuya
 
 Python 3.12 ile doğrulanmıştır. Python kurulu değilse başlatıcı kurulum adresini gösterir; Python'u otomatik kurmaz. Windows başlatıcısı ve isteğe bağlı Excel hesaplatma adımı Windows içindir. Demo ve test akışı Excel gerektirmez.
 
-### Elle kurulum (isteğe bağlı)
+### Elle kurulum ve doğrudan başlatma
 
-Proje klasöründe PowerShell açın:
+Python 3.12 kurulu olmalıdır. Bu kullanım için Tk/tcl veya `launcher.py` gerekmez. Projeyi indirip çıkardıktan sonra proje klasöründe terminal açın.
+
+**Windows / PowerShell — kurulum ve demo:**
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe app.py --demo
 ```
 
-macOS/Linux üzerinde sanal ortamın Python yolu `.venv/bin/python` olur.
+**macOS / Linux — kurulum ve demo:**
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python app.py --demo
+```
+
+Linux'ta sanal ortam oluşturma bileşeni ayrıca kurulu olmalıdır. macOS/Linux'ta Windows Explorer açma düğmesi ve Microsoft Excel otomasyonu desteklenmez.
+
+Kurulum bir kez yapılır. Sonraki açılışlarda yalnızca `app.py` komutunu kullanın; sanal ortamı etkinleştirmeniz gerekmez. Panel tarayıcıda açılır, başlangıç penceresi açılmaz. Kullanım boyunca terminali açık tutun; durdurmak için `Ctrl+C` kullanın.
+
+**Kendi verilerinizle doğrudan başlatma:** Önce çalışan demoyu `Ctrl+C` ile durdurun, ardından özel veri klasörünüzü belirtin.
+
+Windows / PowerShell:
+
+```powershell
+$env:HARCAMA_HOME = Join-Path $env:USERPROFILE 'Harcamalarim'
+.\.venv\Scripts\python.exe app.py
+```
+
+macOS / Linux:
+
+```sh
+export HARCAMA_HOME="$HOME/Harcamalarim"
+.venv/bin/python app.py
+```
+
+Bu ortam değişkeni açık terminal oturumu için geçerlidir. Kalıcı ayar için proje klasöründe `home.txt` oluşturup özel veri klasörünüzün tam yolunu tek satıra yazabilirsiniz. Windows'ta `home.example.txt` dosyasını kopyalamak da aynı işi görür.
+
+İlk ekstrelerinizi tarayıcı panelinden seçebilirsiniz. Tamamen komut satırından içe aktarmak isterseniz dosyaları özel veri klasörünüzün `Belgeler/` altına koyup aynı terminalde aşağıdaki komutu çalıştırın:
+
+```powershell
+.\.venv\Scripts\python.exe harcama.py --no-recalc
+```
+
+macOS/Linux'ta Python yolu `.venv/bin/python` olur. Bu komut web sunucusu veya başlangıç penceresi açmadan HTML ve Excel çıktıları üretir.
 
 ## Önce demoyu deneyin
 
@@ -68,7 +112,7 @@ Başlangıç arayüzü klasör seçimini ve kaydetmeyi otomatik yapar. Komut sat
 1. `home.example.txt` dosyasını `home.txt` adıyla kopyalayın.
 2. İçindeki yolu kod klasörünün dışındaki özel veri klasörünüz olarak ayarlayın. Windows örneği `%USERPROFILE%\Harcamalarim` yolunu kullanır.
 3. Banka dosyalarınızı bu özel klasörün `Belgeler/` alt klasörüne koyun.
-4. `Harcamalarim.bat` dosyasını açın veya aşağıdaki komutu çalıştırın; panelde içe aktarma düğmesini kullanın.
+4. Aşağıdaki komutla doğrudan başlatın; panelde içe aktarma düğmesini kullanın. `Harcamalarim.bat` arayüzlü başlatma seçeneğidir.
 
 ```powershell
 .\.venv\Scripts\python.exe app.py
