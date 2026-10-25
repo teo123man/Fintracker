@@ -5,7 +5,11 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
+from http.server import ThreadingHTTPServer
+from urllib.parse import quote
+from urllib.request import build_opener, ProxyHandler, Request
 from unittest.mock import patch
 
 import app
@@ -13,6 +17,32 @@ from launcher import configured_home, environment_python, prepare_environment, s
 
 
 class SetupTests(unittest.TestCase):
+    def test_upload_from_another_folder_with_turkish_filename(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source = root / "another folder" / "ÖRNEK HAREKETLERİ.pdf"
+            source.parent.mkdir()
+            content = b"%PDF-1.4\n% synthetic upload fixture only\n"
+            source.write_bytes(content)
+            destination = root / "private" / "Belgeler"
+            server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                with patch.object(app.H, "DOCS_DIR", destination):
+                    request = Request(f"http://127.0.0.1:{server.server_port}/api/upload",
+                                      data=source.read_bytes(), headers={"X-Token": app.TOKEN,
+                                      "X-Filename": quote(source.name), "Content-Type": "application/octet-stream"})
+                    opener = build_opener(ProxyHandler({}))
+                    with opener.open(request, timeout=5) as response:
+                        self.assertEqual(response.status, 200)
+                    self.assertEqual((destination / source.name).read_bytes(), content)
+                    self.assertEqual(source.read_bytes(), content)
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=5)
+
     def test_configuration_round_trip_and_environment_priority(self):
         with tempfile.TemporaryDirectory() as folder:
             code = Path(folder) / "code"
@@ -78,6 +108,7 @@ class SetupTests(unittest.TestCase):
             self.assertIn("İlk ekstrelerinizi".encode(), sent[0][1])
             self.assertNotIn(b"/*__APP__*/null", sent[0][1])
             self.assertIn(app.TOKEN.encode(), sent[0][1])
+            self.assertIn(b"globalThis.uploadStatement", sent[0][1])
 
     def test_import_reports_not_ready_and_rejects_missing_token(self):
         with tempfile.TemporaryDirectory() as folder:

@@ -1513,10 +1513,10 @@ function pData() {
     try {
       for (const f of list) {
         toast(`Copying ${f.name} into the folder…`, true);
-        await fetch("/api/upload", {method: "POST", headers: {"X-Token": APP.token, "X-Filename": encodeURIComponent(f.name)}, body: f});
+        await uploadStatement(f, APP.token);
       }
       toast(`${list.length} file${list.length > 1 ? "s" : ""} copied into the folder`); loadFiles();
-    } catch (e) { toast("Couldn't reach the app — is its window still open?", false, 6000); }
+    } catch (e) { toast(e.message, false, 10000); }
   };
   input.addEventListener("change", () => { addFiles(input.files); input.value = ""; });
   const drop = el("div", {class: "drop", role: "button", tabindex: 0, style: "padding:18px", onclick: () => input.click()},

@@ -154,6 +154,8 @@ class Handler(BaseHTTPRequestHandler):
                         return self._send(500, log.encode("utf-8"), "text/plain; charset=utf-8")
             page = H.OUT_HTML if H.OUT_HTML.exists() else CODE / "first_run.html"
             html = page.read_text(encoding="utf-8")
+            client = (CODE / "upload_client.js").read_text(encoding="utf-8")
+            html = html.replace("<script>", "<script>\n" + client + "\n</script>\n<script>", 1)
             app = json.dumps({"token": TOKEN, "demo": "--demo" in sys.argv, "folder": str(H.DOCS_DIR)})
             return self._send(200, html.replace("/*__APP__*/null", app.replace("<", "\\u003c"), 1).encode("utf-8"), "text/html; charset=utf-8")
         if path == "/favicon.ico":
@@ -163,13 +165,20 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self._host_ok() or self.headers.get("X-Token") != TOKEN:
             return self._json(403, {"ok": False, "log": "Not allowed."})
-        n = int(self.headers.get("Content-Length") or 0)
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+            if n < 0:
+                raise ValueError()
+        except ValueError:
+            return self._json(400, {"ok": False, "log": "Geçersiz dosya boyutu. Dosyayı yeniden seçin."})
         if n > MAX_UPLOAD:
             return self._json(413, {"ok": False, "log": "File is too big (40 MB max)."})
         body = self.rfile.read(n) if n else b""
         path = self.path.split("?")[0]
         try:
             if path == "/api/upload":
+                if not body or len(body) != n:
+                    return self._json(400, {"ok": False, "log": "Dosya boş veya aktarım eksik. Dosyayı yeniden seçin."})
                 name = safe_name(self.headers.get("X-Filename", ""))
                 if not name or Path(name).suffix.lower() not in ALLOWED:
                     return self._json(400, {"ok": False, "log": f"{name or 'file'}: only .pdf and .xlsx files"})

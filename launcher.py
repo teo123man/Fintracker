@@ -16,6 +16,19 @@ CODE = Path(__file__).resolve().parent
 HIDDEN = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
 
 
+def enable_high_dpi():
+    """Opt in before Tk creates any windows, so Windows does not bitmap-stretch them."""
+    if os.name == "nt":
+        import ctypes
+        try:
+            ctypes.windll.user32.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
+        except (AttributeError, OSError):
+            try:
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            except (AttributeError, OSError):
+                ctypes.windll.user32.SetProcessDPIAware()
+
+
 def configured_home(code=CODE):
     """Read configuration only, never inspect the selected private directory."""
     if os.environ.get("HARCAMA_HOME"):
@@ -93,50 +106,78 @@ class Launcher:
         self.url = None
         self.busy = False
         self.root.title("Fintracker • Başlangıç")
-        self.root.geometry("740x620")
-        self.root.minsize(700, 600)
-        self.root.configure(bg="#f5f3ee")
+        scale = root.winfo_fpixels("1i") / 96
+        px = lambda n: round(n * scale)
+        self.root.geometry(f"{px(760)}x{px(650)}")
+        self.root.minsize(px(700), px(620))
+        self.root.configure(bg="#f4f6f3")
         style = ttk.Style(root)
         style.theme_use("clam")
-        style.configure("TFrame", background="#f5f3ee")
-        style.configure("TLabel", background="#f5f3ee", foreground="#24372f", font=("Segoe UI", 11))
-        style.configure("Title.TLabel", font=("Segoe UI", 26, "bold"))
-        style.configure("TButton", font=("Segoe UI", 11), padding=(14, 10))
+        style.configure("TFrame", background="#f4f6f3")
+        style.configure("Card.TFrame", background="white")
+        style.configure("TLabel", background="#f4f6f3", foreground="#193b30", font=("Segoe UI", 11))
+        style.configure("Title.TLabel", font=("Segoe UI", 30, "bold"))
+        style.configure("Muted.TLabel", foreground="#65746b")
+        style.configure("Card.TLabel", background="white")
+        style.configure("Caption.TLabel", font=("Segoe UI", 9, "bold"), foreground="#56816c")
+        style.configure("TButton", font=("Segoe UI", 11, "bold"), padding=(px(18), px(12)),
+                        background="#e7eee8", foreground="#254d3e", borderwidth=0,
+                        relief="flat", focusthickness=2, focuscolor="#80aa94")
+        style.map("TButton", background=[("disabled", "#edf1ed"), ("active", "#d7e6dc")],
+                  foreground=[("disabled", "#718077")])
         style.configure("Primary.TButton", background="#176b50", foreground="white")
-        style.map("Primary.TButton", background=[("active", "#10543e"), ("disabled", "#becbc5")])
-        frame = ttk.Frame(root, padding=30)
+        style.map("Primary.TButton", background=[("disabled", "#dae8df"), ("active", "#10543e")],
+                  foreground=[("disabled", "#648171"), ("!disabled", "white")])
+        style.configure("TEntry", padding=px(10), borderwidth=1, relief="flat",
+                        fieldbackground="#f7f9f6", bordercolor="#dce5dd")
+        style.configure("TProgressbar", background="#258563", troughcolor="#e5ebe4",
+                        borderwidth=0, thickness=px(4), lightcolor="#258563", darkcolor="#258563")
+        frame = ttk.Frame(root, padding=px(32))
         frame.pack(fill="both", expand=True)
+        ttk.Label(frame, text="KİŞİSEL FİNANS • BİLGİSAYARINIZDA", style="Caption.TLabel").pack(anchor="w")
         ttk.Label(frame, text="Fintracker", style="Title.TLabel").pack(anchor="w")
-        ttk.Label(frame, text="Harcamalarınız için hazır bir başlangıç.").pack(anchor="w", pady=(4, 22))
-        ttk.Label(frame, text="1   Veri klasörünüzü seçin", font=("Segoe UI", 12, "bold")).pack(anchor="w")
-        ttk.Label(frame, text="Ekstreleriniz ve raporlarınız bu bilgisayarda saklanır.").pack(anchor="w", pady=(6, 10))
-        row = ttk.Frame(frame)
+        ttk.Label(frame, text="Harcamalarınıza daha net bir bakış.", style="Muted.TLabel").pack(anchor="w", pady=(0, px(24)))
+        self.setup_frame = ttk.Frame(frame, style="Card.TFrame", padding=px(24))
+        self.setup_frame.pack(fill="x")
+        ttk.Label(self.setup_frame, text="Verileriniz nerede saklansın?", style="Card.TLabel",
+                  font=("Segoe UI", 15, "bold")).pack(anchor="w")
+        ttk.Label(self.setup_frame, text="Ekstreleriniz ve raporlarınız sadece seçtiğiniz klasörde tutulur.",
+                  style="Card.TLabel", foreground="#65746b").pack(anchor="w", pady=(px(6), px(18)))
+        row = ttk.Frame(self.setup_frame, style="Card.TFrame")
         row.pack(fill="x")
         self.folder = tk.StringVar(value=configured_home())
         self.entry = ttk.Entry(row, textvariable=self.folder, font=("Segoe UI", 10))
-        self.entry.pack(side="left", fill="x", expand=True, ipady=7)
+        self.entry.pack(side="left", fill="x", expand=True, ipady=px(3))
         self.browse = ttk.Button(row, text="Klasör seç", command=self.choose)
-        self.browse.pack(side="left", padx=(8, 0))
-        ttk.Label(frame, text="2   Başlayın", font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(24, 8))
-        ttk.Label(frame, text="İlk açılışta gerekli bileşenler otomatik kurulur.\nArdından tarayıcıda ekstrelerinizi seçebilirsiniz.").pack(anchor="w")
-        buttons = ttk.Frame(frame)
-        buttons.pack(fill="x", pady=(16, 10))
+        self.browse.pack(side="left", padx=(px(10), 0))
+        ttk.Label(self.setup_frame, text="Gerekli bileşenleri sizin için hazırlayıp paneli açacağız.",
+                  style="Card.TLabel", foreground="#65746b").pack(anchor="w", pady=(px(22), 0))
+        buttons = ttk.Frame(self.setup_frame, style="Card.TFrame")
+        buttons.pack(fill="x", pady=(px(16), px(12)))
         self.start_button = ttk.Button(buttons, text="Kendi verilerimle başla", style="Primary.TButton",
                                        command=lambda: self.start(False))
         self.start_button.pack(side="left")
         self.demo_button = ttk.Button(buttons, text="Önce demoyu dene", command=lambda: self.start(True))
-        self.demo_button.pack(side="left", padx=10)
-        ttk.Label(frame, text="Demo, tamamen yapay verilerle açılır.", font=("Segoe UI", 9)).pack(anchor="w")
-        self.progress = ttk.Progressbar(frame, mode="indeterminate")
-        self.progress.pack(fill="x", pady=(20, 8))
-        self.status = tk.StringVar(value="Hazır. İlk kurulum birkaç dakika sürebilir.")
-        ttk.Label(frame, textvariable=self.status, wraplength=620).pack(anchor="w")
-        controls = ttk.Frame(frame)
-        controls.pack(fill="x", pady=(14, 0))
-        self.open_button = ttk.Button(controls, text="Paneli tekrar aç", state="disabled", command=self.open_panel)
+        self.demo_button.pack(side="left", padx=px(10))
+        ttk.Label(self.setup_frame, text="Sadece göz atmak mı istiyorsunuz? Demo tamamen yapay veriler kullanır.",
+                  style="Card.TLabel", foreground="#65746b", font=("Segoe UI", 9)).pack(anchor="w")
+        self.running_frame = ttk.Frame(frame, style="Card.TFrame", padding=px(24))
+        ttk.Label(self.running_frame, text="●  HAZIR", style="Card.TLabel", foreground="#258563",
+                  font=("Segoe UI", 10, "bold")).pack(anchor="w")
+        ttk.Label(self.running_frame, text="Paneliniz açık.", style="Card.TLabel",
+                  font=("Segoe UI", 24, "bold")).pack(anchor="w", pady=(px(12), px(8)))
+        ttk.Label(self.running_frame, text="Harcamalarınızı tarayıcıdan takip edebilirsiniz.\nBu pencereyi küçültüp çalışmaya devam edin.",
+                  style="Card.TLabel", foreground="#65746b").pack(anchor="w")
+        controls = ttk.Frame(self.running_frame, style="Card.TFrame")
+        controls.pack(fill="x", pady=(px(24), 0))
+        self.open_button = ttk.Button(controls, text="Paneli aç  →", style="Primary.TButton", command=self.open_panel)
         self.open_button.pack(side="left")
-        self.stop_button = ttk.Button(controls, text="Uygulamayı durdur", state="disabled", command=self.stop)
-        self.stop_button.pack(side="left", padx=10)
+        self.stop_button = ttk.Button(controls, text="Durdur ve geri dön", command=self.stop)
+        self.stop_button.pack(side="left", padx=px(10))
+        self.progress = ttk.Progressbar(frame, mode="indeterminate")
+        self.progress.pack(fill="x", pady=(px(24), px(12)))
+        self.status = tk.StringVar(value="Hazır. İlk kurulum birkaç dakika sürebilir.")
+        ttk.Label(frame, textvariable=self.status, style="Muted.TLabel", wraplength=px(620)).pack(anchor="w")
         root.protocol("WM_DELETE_WINDOW", self.close)
         root.after(100, self.poll)
 
@@ -204,6 +245,9 @@ class Launcher:
                     self.status.set(value)
                 elif kind == "ready":
                     self.progress.stop()
+                    self.progress.configure(mode="determinate", value=100)
+                    self.setup_frame.pack_forget()
+                    self.running_frame.pack(fill="x", before=self.progress)
                     self.url = value
                     self.status.set("Panel hazır. Uygulama açık kaldığı sürece bu pencereyi açık tutun.")
                     self.open_button.configure(state="normal")
@@ -211,6 +255,9 @@ class Launcher:
                     self.open_panel()
                 elif kind in ("error", "stopped"):
                     self.progress.stop()
+                    self.progress.configure(mode="indeterminate", value=0)
+                    self.running_frame.pack_forget()
+                    self.setup_frame.pack(fill="x", before=self.progress)
                     self.url = None
                     self.process = None
                     self.set_busy(False)
@@ -235,11 +282,17 @@ class Launcher:
         if self.busy and not self.url:
             messagebox.showinfo("Hazırlık sürüyor", "Hazırlık tamamlandığında pencereyi kapatabilirsiniz.", parent=self.root)
             return
+        if self.url and not messagebox.askokcancel(
+                "Uygulama kapatılsın mı?",
+                "Pencereyi kapatmak yerel sunucuyu da durdurur. Tarayıcıdan dosya eklemeye devam etmek için İptal'e basıp bu pencereyi küçültün.",
+                parent=self.root):
+            return
         self.stop()
         self.root.destroy()
 
 
 if __name__ == "__main__":
+    enable_high_dpi()
     window = tk.Tk()
     Launcher(window)
     window.mainloop()

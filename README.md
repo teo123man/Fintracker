@@ -28,7 +28,9 @@ Başlangıç penceresi uygulama ortamını oluşturur, gerekli bileşenleri kura
 
 Kendi verilerinizle ilk açılışta PDF/XLSX belgelerinizi seçebileceğiniz bir karşılama ekranı gelir. Panel için işlem içeren, desteklenen bir kredi kartı ekstresi gerekir. Dosyalar seçtiğiniz klasörün `Belgeler/` altına kopyalanır; asıl dosyalarınız yerinde kalır. Ayar dosyasını elle düzenlemeniz gerekmez.
 
-Başlangıç penceresini kullanım boyunca açık tutun. **Paneli tekrar aç** tarayıcıyı açar; **Uygulamayı durdur** sunucuyu kapatır. Pencereyi kapatmak da sunucuyu durdurur.
+Başlangıç penceresini kullanım boyunca açık tutun veya küçültün. **Paneli aç** tarayıcıyı açar; **Durdur ve geri dön** sunucuyu kapatır. Pencereyi kapatırken de sunucunun duracağına ilişkin onay istenir. Arayüz Windows'un yüksek ekran ölçeklerine uyum sağlar.
+
+Dosyaları başka klasörlerden seçebilirsiniz. Yükleme ekranı dosyayı okuyamama, yerel uygulamaya bağlanamama ve eski sekme oturumu durumlarını ayrı mesajlarla belirtir. Bağlantı hatasında başlangıç penceresinden paneli yeniden açın. Dosya okuma hatasında dosyanın bilgisayarınıza indirilmiş olduğundan emin olup yeniden seçin.
 
 Python 3.12 ile doğrulanmıştır. Python kurulu değilse başlatıcı kurulum adresini gösterir; Python'u otomatik kurmaz. Windows başlatıcısı ve isteğe bağlı Excel hesaplatma adımı Windows içindir. Demo ve test akışı Excel gerektirmez.
 
