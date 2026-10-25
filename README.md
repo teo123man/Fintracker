@@ -93,4 +93,4 @@ GitHub'a ilk gönderimden önce `git status --short` ve `git diff --cached` ile 
 
 ## Lisans
 
-Henüz bir lisans seçilmemiştir. Projeyi açık kaynak olarak dağıtmak istiyorsanız kullanım ve yeniden dağıtım koşullarınıza uygun bir `LICENSE` dosyası ekleyin.
+Bu proje [MIT lisansı](LICENSE) ile dağıtılır.
