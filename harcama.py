@@ -2068,6 +2068,9 @@ def main():
         print(f"  {added} new statement(s)")
         write_csv(TX_CSV, TX_FIELDS, txs)
         write_csv(ST_CSV, ST_FIELDS, sts)
+    if not txs or not any((s.get("kind") or "Card") != "Account" for s in sts):
+        print("Veriler kaydedildi. Panel oluşturmak için işlem içeren, desteklenen bir kredi kartı ekstresi ekleyin.")
+        return
     fx_rows = ensure_fx(sts, fx_rows)
     fx_rows = derive_fx_from_transfers(sts, txs, fx_rows)
     write_csv(FX_CSV, FX_FIELDS, fx_rows)

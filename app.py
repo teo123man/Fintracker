@@ -146,12 +146,16 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path in ("/", "/index.html"):
             if not H.OUT_HTML.exists():
-                ok, log = run_pipeline("--build")
-                if not ok:
-                    return self._send(500, log.encode("utf-8"), "text/plain; charset=utf-8")
-            html = H.OUT_HTML.read_text(encoding="utf-8")
+                # A new installation has no statements yet. Serve onboarding without
+                # trying to calculate totals from an empty ledger.
+                if H.ST_CSV.exists():
+                    ok, log = run_pipeline("--build")
+                    if not ok:
+                        return self._send(500, log.encode("utf-8"), "text/plain; charset=utf-8")
+            page = H.OUT_HTML if H.OUT_HTML.exists() else CODE / "first_run.html"
+            html = page.read_text(encoding="utf-8")
             app = json.dumps({"token": TOKEN, "demo": "--demo" in sys.argv, "folder": str(H.DOCS_DIR)})
-            return self._send(200, html.replace("/*__APP__*/null", app, 1).encode("utf-8"), "text/html; charset=utf-8")
+            return self._send(200, html.replace("/*__APP__*/null", app.replace("<", "\\u003c"), 1).encode("utf-8"), "text/html; charset=utf-8")
         if path == "/favicon.ico":
             return self._send(204, b"", "image/x-icon")
         return self._send(404, b"not found", "text/plain")
@@ -178,7 +182,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(200, {"ok": True})
             if path == "/api/import":
                 ok, log = run_pipeline()
-                return self._json(200, {"ok": ok, "log": log})
+                return self._json(200, {"ok": ok, "log": log, "ready": H.OUT_HTML.exists()})
             data = json.loads(body or b"{}")
             if path == "/api/categorize":
                 merchant = (data.get("merchant") or "").strip()[:80]

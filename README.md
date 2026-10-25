@@ -17,7 +17,22 @@ Banka ayrıştırıcıları belirli belge düzenleri için yazılmıştır. Fark
 
 ## Kurulum
 
-Python 3.12 ile doğrulanmıştır. Windows başlatıcısı ve isteğe bağlı Excel hesaplatma adımı Windows içindir. Demo ve test akışı Excel gerektirmez.
+### Windows: arayüzle başlatma
+
+1. Python 3.12 veya sonraki bir sürümü kurun. Python kurulumunda **Add python.exe to PATH** ve **tcl/tk** bileşenini etkinleştirin.
+2. Projeyi indirip ZIP dosyasını bir klasöre çıkarın.
+3. **Harcamalarim.bat** dosyasına çift tıklayın.
+4. Başlangıç penceresinde **Önce demoyu dene** veya bir veri klasörü seçerek **Kendi verilerimle başla** düğmesine basın.
+
+Başlangıç penceresi uygulama ortamını oluşturur, gerekli bileşenleri kurar ve tarayıcıyı açar. İlk kurulum internet gerektirir; sonraki açılışlarda bileşen listesi değişmedikçe ve kurulum sağlamsa yeniden indirme yapılmaz. Kurulum başarısız olursa hata penceresini kapatıp yeniden deneyebilirsiniz.
+
+Kendi verilerinizle ilk açılışta PDF/XLSX belgelerinizi seçebileceğiniz bir karşılama ekranı gelir. Panel için işlem içeren, desteklenen bir kredi kartı ekstresi gerekir. Dosyalar seçtiğiniz klasörün `Belgeler/` altına kopyalanır; asıl dosyalarınız yerinde kalır. Ayar dosyasını elle düzenlemeniz gerekmez.
+
+Başlangıç penceresini kullanım boyunca açık tutun. **Paneli tekrar aç** tarayıcıyı açar; **Uygulamayı durdur** sunucuyu kapatır. Pencereyi kapatmak da sunucuyu durdurur.
+
+Python 3.12 ile doğrulanmıştır. Python kurulu değilse başlatıcı kurulum adresini gösterir; Python'u otomatik kurmaz. Windows başlatıcısı ve isteğe bağlı Excel hesaplatma adımı Windows içindir. Demo ve test akışı Excel gerektirmez.
+
+### Elle kurulum (isteğe bağlı)
 
 Proje klasöründe PowerShell açın:
 
@@ -46,6 +61,8 @@ Bu komut `demo/` klasörünü silip yeniden üretir. Bu klasöre gerçek veri ko
 
 ## Kendi verilerinizle kullanım
 
+Başlangıç arayüzü klasör seçimini ve kaydetmeyi otomatik yapar. Komut satırından kullanmak isterseniz:
+
 1. `home.example.txt` dosyasını `home.txt` adıyla kopyalayın.
 2. İçindeki yolu kod klasörünün dışındaki özel veri klasörünüz olarak ayarlayın. Windows örneği `%USERPROFILE%\Harcamalarim` yolunu kullanır.
 3. Banka dosyalarınızı bu özel klasörün `Belgeler/` alt klasörüne koyun.
@@ -55,7 +72,7 @@ Bu komut `demo/` klasörünü silip yeniden üretir. Bu klasöre gerçek veri ko
 .\.venv\Scripts\python.exe app.py
 ```
 
-Veri klasörü önceliği: `HARCAMA_HOME` ortam değişkeni → `home.txt` → kod klasörü. Kendi verileriniz için ilk iki seçenekten birini kullanın. Uygulama `.env` dosyalarını otomatik okumaz.
+Komut satırında veri klasörü önceliği: `HARCAMA_HOME` ortam değişkeni → `home.txt` → kod klasörü. Başlangıç arayüzü mevcut ayarı gösterir; seçtiğiniz klasörü kaydeder ve o açılış için kullanır. Kendi verileriniz için kod klasörünün dışında bir klasör seçin. Uygulama `.env` dosyalarını otomatik okumaz.
 
 CSV kayıtları özel veri klasöründeki `data/` altında tutulur. `Harcamalarim.html` ve `Harcamalarim.xlsx` bunlardan üretilir. **HTML ve Excel çıktıları da kişisel finansal veri içerir.** Yedeklerinizi özel bir yerde tutun.
 
@@ -69,16 +86,18 @@ Aşağıdaki komutlarda da sanal ortamın Python'unu kullanın:
 python harcama.py                       # yeni belgeleri içe aktar ve çıktıları üret
 python harcama.py --build --no-recalc   # mevcut CSV'lerden çıktıları yeniden üret
 python app.py --demo --no-browser      # tarayıcı açmadan demo sunucusu
-python -m unittest discover -v         # mevcut kapsam hesaplama testleri
+python -m unittest discover -v         # kapsam ve başlangıç akışı testleri
 ```
 
-`--no-recalc` Microsoft Excel üzerinden formül hesaplatmayı atlar. Formüller dosyada kalır; Excel açıldığında yeniden hesaplanır. Gerçek veri olmadan test etmek için `HARCAMA_HOME` değerini `demo` yapın. GitHub Actions mevcut birim testlerini ve demo üretimini çalıştırır; bu kontroller tüm banka biçimlerinin doğruluğunu kapsamaz.
+`--no-recalc` Microsoft Excel üzerinden formül hesaplatmayı atlar. Formüller dosyada kalır; Excel açıldığında yeniden hesaplanır. Gerçek veri olmadan test etmek için `HARCAMA_HOME` değerini `demo` yapın. GitHub Actions Windows ve Linux üzerinde birim testlerini ve demo üretimini çalıştırır; bu kontroller tüm banka biçimlerinin doğruluğunu kapsamaz.
 
 ## Dosya yapısı
 
 | Dosya | Görev |
 | --- | --- |
 | `app.py` | Yerel web sunucusu ve panel işlemleri |
+| `launcher.py` | Kurulum, veri klasörü seçimi ve uygulama başlatma penceresi |
+| `first_run.html` | İlk ekstreleri ekleme ekranı |
 | `harcama.py` | Belge ayrıştırma, kategorilendirme ve Excel üretimi |
 | `dashboard.py` | Panel verisi ve HTML üretimi |
 | `dashboard_template.html` | Panel arayüzü |

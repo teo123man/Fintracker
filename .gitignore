@@ -12,6 +12,7 @@ dist/
 
 # Local configuration / credentials / editor state
 /home.txt
+/home.txt.tmp
 /coverage_sources.txt
 .env
 .env.*
