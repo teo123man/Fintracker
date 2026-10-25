@@ -1,0 +1,5 @@
+# İlk içe aktarılan ekstre döneminden önce de kullanımda olan kaynaklar.
+# Her satıra uygulamadaki kaynak adını tam olarak yazın.
+# coverage_sources.txt olarak kopyalayın. Bu yerel dosyayı paylaşmayın.
+# Örnek (yapay):
+# Garanti Bonus •1111

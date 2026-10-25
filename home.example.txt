@@ -1,0 +1,2 @@
+# Windows: kullanıcı profilinizin altında, kod klasörü dışında özel veri klasörü.
+%USERPROFILE%\Harcamalarim

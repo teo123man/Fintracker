@@ -1,0 +1,43 @@
+# Python / environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local configuration / credentials / editor state
+/home.txt
+/coverage_sources.txt
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.claude/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Financial data and generated dashboards (including demo output)
+data/
+Belgeler/
+ekstreler/
+hesap_dokumu/
+inbox/
+/demo/
+*.csv
+*.tsv
+*.pdf
+*.xls
+*.xlsx
+*.xlsm
+Harcamalarim.html
+*.log
+*.bak
+*.zip
